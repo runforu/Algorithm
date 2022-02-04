@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <iostream>
-#include <list>
+#include <set>
 #include <vector>
 
 int Calculate(std::string& str, std::vector<std::pair<int, int>>& cards) {
@@ -43,10 +43,24 @@ int Solve(std::vector<std::string>& strings, std::vector<std::pair<uint8_t, int>
         ++cards[toupper(card.first) - 'A'].second;
     }
     int max{0};
-    for (int i = 0; i < std::pow(strings.size(), 2); ++i) {
-        auto tmp = Calculate(strings, cards, i);
-        if (tmp > max) {
-            max = tmp;
+    std::vector<int> masks(static_cast<std::vector<int>::size_type>(std::pow(strings.size(), 2)), -1);
+    masks[0] = 0;
+    for (size_t i = 0; i < masks.size(); ++i) {
+        if (masks[i] >= 0) {
+            continue;
+        }
+        auto value{Calculate(strings, cards, i)};
+        if (value == 0) {
+            for (size_t j = i; j < masks.size(); ++j) {
+                if ((j & i) == i) {
+                    masks[j] = 0;
+                }
+            }
+            continue;
+        }
+        masks[i] = value;
+        if (value > max) {
+            max = value;
         }
     }
 
@@ -54,7 +68,7 @@ int Solve(std::vector<std::string>& strings, std::vector<std::pair<uint8_t, int>
 }
 
 int main() {
-    std::vector<std::string> strings{std::string{"abc"}, std::string{"cat"}};
+    std::vector<std::string> strings{std::string{"abc"}, std::string{"cat"}, std::string{"edf"}, std::string{"fab"}};
     std::vector<std::pair<uint8_t, int>> cards{{'A', 3}, {'A', 3}, {'B', 4}, {'T', 5}, {'C', 4}};
     Solve(strings, cards);
     std::cout << Solve(strings, cards) << "\n";
